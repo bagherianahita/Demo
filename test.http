@@ -1,0 +1,16 @@
+POST http://localhost:4100/debug/audit
+Content-Type: application/json
+
+{
+  "scoringInput": {
+    "pathway": "experienced_renter",
+    "monthlyIncome": 2500,
+    "rentAmount": 1800,
+    "missedPayments": 2
+  },
+  "scoringResult": {
+    "totalScore": 55,
+    "fixedScore": 50,
+    "pathway": "experienced_renter"
+  }
+}

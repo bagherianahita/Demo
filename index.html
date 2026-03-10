@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trust Logic Auditor | Management Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="max-w-6xl mx-auto p-8">
+        <header class="mb-10 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800">Trust Logic Auditor</h1>
+                <p class="text-slate-500">Real-time Trust Scoring Logic Verification</p>
+            </div>
+            <div class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-semibold">
+                Status: <span id="serverStatus">Checking...</span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-xl font-semibold mb-4 text-slate-700">Test Scenario Input</h2>
+                <textarea id="jsonInput" class="w-full h-80 p-4 font-mono text-sm bg-slate-900 text-green-400 rounded-lg border-none focus:ring-2 focus:ring-blue-500" placeholder="Paste Scoring Payload here..."></textarea>
+                <button id="btnRunAudit" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all shadow-md">
+                    Run Audit Analysis
+                </button>
+            </div>
+
+            <div id="resultsArea" class="hidden">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
+                    <h2 class="text-xl font-semibold mb-4 text-slate-700">Audit Summary</h2>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="p-4 bg-green-50 rounded-lg border border-green-200 text-center">
+                            <p class="text-xs text-green-600 uppercase font-bold">Passed</p>
+                            <p id="passedCount" class="text-2xl font-bold text-green-700">0</p>
+                        </div>
+                        <div class="p-4 bg-red-50 rounded-lg border border-red-200 text-center">
+                            <p class="text-xs text-red-600 uppercase font-bold">Contradictions</p>
+                            <p id="failedCount" class="text-2xl font-bold text-red-700">0</p>
+                        </div>
+                        <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200 text-center">
+                            <p class="text-xs text-yellow-600 uppercase font-bold">Health Score</p>
+                            <p id="healthScore" class="text-2xl font-bold text-yellow-700">0%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="auditLog" class="space-y-3">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const defaultData = {
+            "scoringInput": { "pathway": "experienced_renter", "monthlyIncome": 2500, "rentAmount": 2100, "missedPayments": 2 },
+            "scoringResult": { "totalScore": 85, "fixedScore": 80, "pathway": "experienced_renter" }
+        };
+        document.getElementById('jsonInput').value = JSON.stringify(defaultData, null, 2);
+
+        document.getElementById('btnRunAudit').onclick = async () => {
+            const input = document.getElementById('jsonInput').value;
+            const res = await fetch('http://localhost:4100/debug/audit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: input
+            });
+            const { data } = await res.json();
+            showResults(data);
+        };
+
+        function showResults(data) {
+            document.getElementById('resultsArea').classList.remove('hidden');
+            const audit = data.audit;
+            document.getElementById('passedCount').innerText = audit.summary.passed;
+            document.getElementById('failedCount').innerText = audit.summary.contradictions;
+            
+            const total = audit.summary.passed + audit.summary.failed;
+            const health = Math.round((audit.summary.passed / total) * 100);
+            document.getElementById('healthScore').innerText = health + "%";
+
+            const log = document.getElementById('auditLog');
+            log.innerHTML = audit.scenarioResults.map(s => `
+                <div class="p-4 rounded-lg flex justify-between items-center ${s.passed ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}">
+                    <div>
+                        <span class="font-bold text-sm text-slate-700">${s.scenarioId}: ${s.name}</span>
+                        ${!s.passed ? `<p class="text-xs text-red-600 mt-1">${s.message}</p>` : ''}
+                    </div>
+                    <span class="px-3 py-1 rounded text-xs font-bold ${s.passed ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}">
+                        ${s.passed ? 'PASS' : 'FAIL'}
+                    </span>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

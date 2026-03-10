@@ -1,0 +1,19 @@
+{
+    "name": "trust-debugger-demo",
+    "version": "0.1.0",
+    "private": true,
+    "main": "app.js",
+    "scripts": {
+        "dev": "node app.js",
+        "start": "node app.js"
+    },
+    "dependencies": {
+        "cors": "^2.8.5",
+        "express": "^4.19.2",
+        "morgan": "^1.10.0"
+    },
+    "devDependencies": {
+        "concurrently": "^9.2.1",
+        "serve": "^14.2.6"
+    }
+}

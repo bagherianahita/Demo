@@ -1,0 +1,19 @@
+function errorHandler(err, req, res, next) {
+    console.error("Unhandled error in trust-debugger-demo:", err);
+  
+    if (res.headersSent) {
+      return next(err);
+    }
+  
+    res.status(500).json({
+      message: "Internal server error in trust-debugger-demo",
+      error:
+        process.env.NODE_ENV === "development"
+          ? String(err && err.message ? err.message : err)
+          : "An unexpected error occurred"
+    });
+  }
+  
+  module.exports = {
+    errorHandler
+  };
