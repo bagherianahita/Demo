@@ -23,6 +23,12 @@ app.get("/health", (req, res) => {
   });
 });
 
+
+
+app.get("/", (req, res) => {
+  res.send("Trust Debugger API is active. Use /health or /debug/audit.");
+});
+
 // Debug / audit routes
 app.use("/debug", debugRoutes);
 
