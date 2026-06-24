@@ -1,64 +1,33 @@
-# trust-debugger-service
+# Trust Debugger Demo
 
-Express + TypeScript service that audits trust scoring logic by comparing `scoringInput` + `scoringResult` and returning an audit report.
+**Companion demo** for [Debugger-Auditor-Service](https://github.com/bagherianahita/Debugger-Auditor-Service) — Express API + HTML UI for trust-scoring scenario audits.
 
-## Requirements
+![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=flat-square&logo=node.js&logoColor=white)
 
-- Node.js 22+ (recommended)
-- npm
+## Architecture
 
-## Setup
+```
+Browser (index.html) ──POST /debug/audit──► Express (app.js)
+                                                    │
+                                         auditor/trustLogicAuditor.js
+                                         auditor/scenarios.js (S01–S04)
+```
+
+## Quick start
 
 ```bash
-cd trust-debugger-service
-cp .env.example .env
 npm install
-```
-
-## Run
-
-### Dev (hot reload)
-
-```bash
-npm run dev
-```
-
-### Build + start (prod)
-
-```bash
-npm run build
-npm start
+npm start    # http://localhost:3000
 ```
 
 ## Endpoints
 
-- `GET /health`
-- `POST /debug/audit`
-- `POST /debug/batch-audit`
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/health` | Health check |
+| `POST` | `/debug/audit` | Single audit |
+| `POST` | `/debug/batch-audit` | Batch audit |
 
-## Example payload (single audit)
+## License
 
-```json
-{
-  "scoringInput": {
-    "pathway": "some-pathway",
-    "monthlyIncome": 5000,
-    "rentAmount": 1500
-  },
-  "scoringResult": {
-    "totalScore": 80,
-    "fixedScore": 50,
-    "variableScore": 30,
-    "pathway": "some-pathway",
-    "thresholdMet": true
-  }
-}
-```
-
-## Docker
-
-```bash
-docker build -t trust-debugger-service .
-docker run --rm -p 4000:4000 --env-file .env trust-debugger-service
-```
-
+MIT — see [LICENSE](LICENSE).
