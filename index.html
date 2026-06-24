@@ -58,9 +58,14 @@
         };
         document.getElementById('jsonInput').value = JSON.stringify(defaultData, null, 2);
 
+        fetch('/health')
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(() => { document.getElementById('serverStatus').textContent = 'Online'; })
+            .catch(() => { document.getElementById('serverStatus').textContent = 'Offline'; });
+
         document.getElementById('btnRunAudit').onclick = async () => {
             const input = document.getElementById('jsonInput').value;
-            const res = await fetch('http://localhost:4100/debug/audit', {
+            const res = await fetch('/debug/audit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: input
