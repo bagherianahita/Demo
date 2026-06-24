@@ -13,12 +13,14 @@ Browser (index.html) ──POST /debug/audit──► Express (app.js)
                                          auditor/scenarios.js (S01–S04)
 ```
 
-## Quick start
+## Quick start (employers — no API keys)
 
 ```bash
 npm install
-npm start    # http://localhost:3000
+npm start    # http://localhost:4100
 ```
+
+The browser UI opens with a **pre-filled audit payload**. Click **Run Audit Analysis**.
 
 ## Endpoints
 

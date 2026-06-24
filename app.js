@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
@@ -9,32 +10,27 @@ const NODE_ENV = process.env.NODE_ENV || "development";
 
 const app = express();
 
-// Basic middleware
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 app.use(morgan("dev"));
+app.use(express.static(path.join(__dirname)));
 
-// Health check
 app.get("/health", (req, res) => {
   res.json({
     status: "ok",
     service: "trust-debugger-demo",
-    env: NODE_ENV
+    env: NODE_ENV,
   });
 });
 
-
-
 app.get("/", (req, res) => {
-  res.send("Trust Debugger API is active. Use /health or /debug/audit.");
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// Debug / audit routes
 app.use("/debug", debugRoutes);
-
-// Error handler (must be last)
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`trust-debugger-demo is running on http://localhost:${PORT}`);
+  console.log(`Trust Debugger Demo: http://localhost:${PORT}`);
+  console.log("Open the URL in your browser — default audit payload is pre-filled.");
 });
