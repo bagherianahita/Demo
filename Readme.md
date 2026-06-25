@@ -1,4 +1,4 @@
-# Trust Debugger Demo
+﻿# Trust Debugger Demo
 
 **Companion demo** for [Debugger-Auditor-Service](https://github.com/bagherianahita/Debugger-Auditor-Service) — Express API + HTML UI for trust-scoring scenario audits.
 
@@ -13,7 +13,7 @@ Browser (index.html) ──POST /debug/audit──► Express (app.js)
                                          auditor/scenarios.js (S01–S04)
 ```
 
-## Quick start (employers — no API keys)
+## Quick start
 
 ```bash
 npm install
