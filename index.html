@@ -2,87 +2,171 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Trust Logic Auditor | Management Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trust Logic Auditor | Demo</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 font-sans">
     <div class="max-w-6xl mx-auto p-8">
-        <header class="mb-10 flex justify-between items-center">
+        <header class="mb-10 flex flex-wrap gap-4 justify-between items-center">
             <div>
                 <h1 class="text-3xl font-bold text-slate-800">Trust Logic Auditor</h1>
-                <p class="text-slate-500">Real-time Trust Scoring Logic Verification</p>
+                <p class="text-slate-500">Scenario-based trust scoring verification — demo with default payloads</p>
             </div>
-            <div class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-semibold">
+            <div id="statusBadge" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg font-semibold">
                 Status: <span id="serverStatus">Checking...</span>
             </div>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                <h2 class="text-xl font-semibold mb-4 text-slate-700">Test Scenario Input</h2>
-                <textarea id="jsonInput" class="w-full h-80 p-4 font-mono text-sm bg-slate-900 text-green-400 rounded-lg border-none focus:ring-2 focus:ring-blue-500" placeholder="Paste Scoring Payload here..."></textarea>
+                <h2 class="text-xl font-semibold mb-4 text-slate-700">Test scenario</h2>
+
+                <label class="block text-sm font-medium text-slate-600 mb-1">Preset</label>
+                <select id="preset" class="w-full border rounded-lg p-2 mb-4 text-sm">
+                    <option value="contradictions">Contradiction case (2 expected failures)</option>
+                    <option value="clean">Clean case (all scenarios pass)</option>
+                </select>
+
+                <label class="block text-sm font-medium text-slate-600 mb-1">Audit payload (JSON)</label>
+                <textarea id="jsonInput" class="w-full h-72 p-4 font-mono text-sm bg-slate-900 text-green-400 rounded-lg border-none focus:ring-2 focus:ring-blue-500"></textarea>
                 <button id="btnRunAudit" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all shadow-md">
                     Run Audit Analysis
                 </button>
+                <p id="errorMsg" class="text-red-600 text-sm mt-3 hidden"></p>
             </div>
 
-            <div id="resultsArea" class="hidden">
+            <div id="resultsArea">
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
-                    <h2 class="text-xl font-semibold mb-4 text-slate-700">Audit Summary</h2>
+                    <h2 class="text-xl font-semibold mb-4 text-slate-700">Audit summary</h2>
+                    <p id="resultHint" class="text-xs text-slate-500 mb-4">Click Run Audit or wait for auto-run on load.</p>
                     <div class="grid grid-cols-3 gap-4">
                         <div class="p-4 bg-green-50 rounded-lg border border-green-200 text-center">
                             <p class="text-xs text-green-600 uppercase font-bold">Passed</p>
-                            <p id="passedCount" class="text-2xl font-bold text-green-700">0</p>
+                            <p id="passedCount" class="text-2xl font-bold text-green-700">—</p>
                         </div>
                         <div class="p-4 bg-red-50 rounded-lg border border-red-200 text-center">
                             <p class="text-xs text-red-600 uppercase font-bold">Contradictions</p>
-                            <p id="failedCount" class="text-2xl font-bold text-red-700">0</p>
+                            <p id="failedCount" class="text-2xl font-bold text-red-700">—</p>
                         </div>
                         <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200 text-center">
-                            <p class="text-xs text-yellow-600 uppercase font-bold">Health Score</p>
-                            <p id="healthScore" class="text-2xl font-bold text-yellow-700">0%</p>
+                            <p class="text-xs text-yellow-600 uppercase font-bold">Health score</p>
+                            <p id="healthScore" class="text-2xl font-bold text-yellow-700">—</p>
                         </div>
                     </div>
                 </div>
-
-                <div id="auditLog" class="space-y-3">
-                    </div>
+                <div id="auditLog" class="space-y-3"></div>
             </div>
         </div>
     </div>
 
     <script>
-        const defaultData = {
-            "scoringInput": { "pathway": "experienced_renter", "monthlyIncome": 2500, "rentAmount": 2100, "missedPayments": 2 },
-            "scoringResult": { "totalScore": 85, "fixedScore": 80, "pathway": "experienced_renter" }
+        const PRESETS = {
+            contradictions: {
+                scoringInput: {
+                    pathway: "experienced_renter",
+                    monthlyIncome: 2500,
+                    rentAmount: 2100,
+                    missedPayments: 2
+                },
+                scoringResult: {
+                    totalScore: 85,
+                    fixedScore: 80,
+                    pathway: "experienced_renter",
+                    fixedBreakdown: { concerns: [] }
+                }
+            },
+            clean: {
+                scoringInput: {
+                    pathway: "experienced_renter",
+                    monthlyIncome: 5000,
+                    rentAmount: 1500,
+                    missedPayments: 0,
+                    criminalBackground: false,
+                    sanctionsCheck: false,
+                    fraudCheck: false
+                },
+                scoringResult: {
+                    totalScore: 85,
+                    fixedScore: 82,
+                    pathway: "experienced_renter",
+                    fixedBreakdown: {
+                        concerns: ["Rent-to-income ratio within acceptable range"]
+                    }
+                }
+            }
         };
-        document.getElementById('jsonInput').value = JSON.stringify(defaultData, null, 2);
+
+        function loadPreset(name) {
+            document.getElementById('jsonInput').value = JSON.stringify(PRESETS[name], null, 2);
+        }
+
+        document.getElementById('preset').onchange = (e) => loadPreset(e.target.value);
+        loadPreset('contradictions');
 
         fetch('/health')
             .then(r => r.ok ? r.json() : Promise.reject())
-            .then(() => { document.getElementById('serverStatus').textContent = 'Online'; })
-            .catch(() => { document.getElementById('serverStatus').textContent = 'Offline'; });
-
-        document.getElementById('btnRunAudit').onclick = async () => {
-            const input = document.getElementById('jsonInput').value;
-            const res = await fetch('/debug/audit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: input
+            .then(() => {
+                document.getElementById('serverStatus').textContent = 'Online';
+                runAudit();
+            })
+            .catch(() => {
+                document.getElementById('serverStatus').textContent = 'Offline';
+                document.getElementById('statusBadge').className = 'bg-red-100 text-red-700 px-4 py-2 rounded-lg font-semibold';
+                showError('API offline — run: npm install && npm start');
             });
-            const { data } = await res.json();
-            showResults(data);
-        };
+
+        document.getElementById('btnRunAudit').onclick = runAudit;
+
+        function showError(msg) {
+            const el = document.getElementById('errorMsg');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+        }
+
+        function clearError() {
+            document.getElementById('errorMsg').classList.add('hidden');
+        }
+
+        async function runAudit() {
+            clearError();
+            const btn = document.getElementById('btnRunAudit');
+            btn.disabled = true;
+            btn.textContent = 'Running…';
+            try {
+                const input = document.getElementById('jsonInput').value;
+                JSON.parse(input);
+                const res = await fetch('/debug/audit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: input
+                });
+                const body = await res.json();
+                if (!res.ok) {
+                    throw new Error(body.message || body.errors?.join(', ') || `HTTP ${res.status}`);
+                }
+                showResults(body.data);
+            } catch (err) {
+                showError(err.message || 'Audit failed');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Run Audit Analysis';
+            }
+        }
 
         function showResults(data) {
-            document.getElementById('resultsArea').classList.remove('hidden');
             const audit = data.audit;
+            const total = audit.summary.passed + audit.summary.failed;
+            const health = total > 0 ? Math.round((audit.summary.passed / total) * 100) : 0;
+
             document.getElementById('passedCount').innerText = audit.summary.passed;
             document.getElementById('failedCount').innerText = audit.summary.contradictions;
-            
-            const total = audit.summary.passed + audit.summary.failed;
-            const health = Math.round((audit.summary.passed / total) * 100);
-            document.getElementById('healthScore').innerText = health + "%";
+
+            const hint = audit.summary.contradictions > 0
+                ? `${audit.summary.contradictions} contradiction(s) detected — auditor is working as expected.`
+                : 'All scenarios passed — clean audit.';
+            document.getElementById('resultHint').textContent = hint;
+            document.getElementById('healthScore').innerText = health + '%';
 
             const log = document.getElementById('auditLog');
             log.innerHTML = audit.scenarioResults.map(s => `

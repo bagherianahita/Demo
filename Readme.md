@@ -20,10 +20,10 @@ npm install
 npm start    # http://localhost:4100
 ```
 
-The browser UI opens with a **pre-filled audit payload**. Click **Run Audit Analysis**.
+The browser UI opens with **preset scenarios** and auto-runs an audit on load. Use **Contradiction case** to see detected logic failures, or **Clean case** for a passing audit.
 
 | | URL |
-|---|-----|
+|---|---|
 | **Web UI** | http://localhost:4100 |
 | **Health check** | http://localhost:4100/health |
 
