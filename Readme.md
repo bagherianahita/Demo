@@ -1,4 +1,6 @@
 ﻿# Trust Debugger Demo
+ <img width="874" height="611" alt="image" src="https://github.com/user-attachments/assets/efd136a3-746f-4d27-abdc-54c90d8bad5e" />
+
 
 **Companion demo** for [Debugger-Auditor-Service](https://github.com/bagherianahita/Debugger-Auditor-Service) — Express API + HTML UI for trust-scoring scenario audits.
 
