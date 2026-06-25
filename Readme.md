@@ -22,6 +22,11 @@ npm start    # http://localhost:4100
 
 The browser UI opens with a **pre-filled audit payload**. Click **Run Audit Analysis**.
 
+| | URL |
+|---|-----|
+| **Web UI** | http://localhost:4100 |
+| **Health check** | http://localhost:4100/health |
+
 ## Endpoints
 
 | Method | Endpoint | Description |
